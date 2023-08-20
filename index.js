@@ -2,7 +2,7 @@ const { Telegraf } = require('telegraf');
 const { message } = require('telegraf/filters');
 const CoinGecko = require('coingecko-api')
 
-const bot = new Telegraf('6651338023:AAHDZ2fXwQdg6YrXj4thhxaN9NKMPQTA9v4');
+const bot = new Telegraf('');
 bot.start((ctx) => ctx.reply('Welcome'));
 bot.on(message('sticker'), (ctx) => {
         bitcoin_price().then(res => ctx.reply(`Цена битка сейчас ${res.data.bitcoin.usd} баксов`))
