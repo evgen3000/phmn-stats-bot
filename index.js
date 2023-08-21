@@ -1,8 +1,10 @@
 const { Telegraf } = require('telegraf');
 const { message } = require('telegraf/filters');
-const CoinGecko = require('coingecko-api')
+const CoinGecko = require('coingecko-api');
 
-const bot = new Telegraf('');
+const config = require('./config/default.json')
+
+const bot = new Telegraf(config.token);
 bot.start((ctx) => ctx.reply('Welcome'));
 bot.on(message('sticker'), (ctx) => {
         bitcoin_price().then(res => ctx.reply(`Цена битка сейчас ${res.data.bitcoin.usd} баксов`))
