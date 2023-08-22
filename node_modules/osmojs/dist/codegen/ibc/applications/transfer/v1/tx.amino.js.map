@@ -1,0 +1,1 @@
+{"version":3,"file":"tx.amino.js","sourceRoot":"","sources":["../../../../../../src/codegen/ibc/applications/transfer/v1/tx.amino.ts"],"names":[],"mappings":";;;AAAA,aAAa;AACb,6BAAmC;AACtB,QAAA,cAAc,GAAG;IAC5B,2CAA2C,EAAE;QAC3C,SAAS,EAAE,wBAAwB;QACnC,OAAO,EAAE,gBAAW,CAAC,OAAO;QAC5B,SAAS,EAAE,gBAAW,CAAC,SAAS;KACjC;CACF,CAAC"}
