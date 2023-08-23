@@ -1,12 +1,9 @@
-const { Telegraf } = require('telegraf');
-const { message } = require('telegraf/filters');
-const  CoinGecko  = require('coingecko-api');
-const { osmosis } = require('osmojs')
-
-const config = require('./config/default.json')
+import { Telegraf } from 'telegraf';
+import CoinGecko from 'coingecko-api';
+import { osmosis } from 'osmojs';
+import 'dotenv/config';
 
 const CoinGeckoClient = new CoinGecko();
-const REST_ENDPOINT = 'https://lcd.osmosis.zone';
 
 const prices = async() => {
     let pricesData = await CoinGeckoClient.simple.price({
@@ -14,27 +11,27 @@ const prices = async() => {
                                                     vs_currencies: 'usd',
                                                     });
                                                     
-    const client = await osmosis.ClientFactory.createLCDClient({ restEndpoint: REST_ENDPOINT });
-    const phmnatomPool = await client.osmosis.gamm.v1beta1.pool({poolId: '867'})
-    const atomAmountInphmnatomPool = phmnatomPool.pool.pool_assets[0].token.amount
-    const phmnAmountInphmnatomPool = phmnatomPool.pool.pool_assets[1].token.amount
-    const phmnatomPrice = atomAmountInphmnatomPool / phmnAmountInphmnatomPool
-    const atomusdPrice = pricesData.data.cosmos.usd
-    const phmnatomPriceusd = atomAmountInphmnatomPool / phmnAmountInphmnatomPool * atomusdPrice
+    const client = await osmosis.ClientFactory.createLCDClient({ restEndpoint: process.env.REST_ENDPOINT_OSMOSIS });
+    const phmnAtomPool = await client.osmosis.gamm.v1beta1.pool({poolId: '867'})
+    const atomAmountInPhmnAtomPool = phmnAtomPool.pool.pool_assets[0].token.amount
+    const phmnAmountInPhmnAtomPool = phmnAtomPool.pool.pool_assets[1].token.amount
+    const phmnAtomPrice = atomAmountInPhmnAtomPool / phmnAmountInPhmnAtomPool
+    const atomUsdPrice = pricesData.data.cosmos.usd
+    const phmnAtomPriceUsd = atomAmountInPhmnAtomPool / phmnAmountInPhmnAtomPool * atomUsdPrice
 
-    const junousdPrice = pricesData.data['juno-network'].usd
+    const junoUsdPrice = pricesData.data['juno-network'].usd
 
-    const phmnibcxPool = await client.osmosis.gamm.v1beta1.pool({poolId: '1042'})
-    const ibcxAmountInphmnatomPool = phmnatomPool.pool.pool_assets[0].token.amount
-    const phmnAmountInphmnibcxPool = phmnatomPool.pool.pool_assets[1].token.amount
-    const phmnibcxPrice = atomAmountInphmnatomPool / phmnAmountInphmnatomPool
+    const phmnIbcxPool = await client.osmosis.gamm.v1beta1.pool({poolId: '1042'})
+    const ibcxAmountInPhmnIbcxPool =  phmnIbcxPool.pool.pool_assets[0].token.amount
+    const phmnAmountInPhmnIbcxPool =  phmnIbcxPool.pool.pool_assets[1].token.amount
+    const phmnIbcxPrice = ibcxAmountInPhmnIbcxPool / phmnAmountInPhmnIbcxPool
 
-    return [atomusdPrice, junousdPrice, phmnatomPriceusd, phmnatomPrice, phmnibcxPrice]
+    return [atomUsdPrice, junoUsdPrice, phmnAtomPriceUsd, phmnAtomPrice, phmnIbcxPrice]
 } 
 
-const bot = new Telegraf(config.token);
+const bot = new Telegraf(process.env.TOKEN);
 bot.start((ctx) => ctx.reply('Welcome'));
-bot.command('phmn', (ctx) => {
+bot.command('phmn', async (ctx) => {
         prices().then(data => ctx.replyWithHTML(`
 <strong>ATOM price:</strong> ${data[0].toFixed(2)}$
 <strong>JUNO price:</strong> ${data[1].toFixed(2)}$
