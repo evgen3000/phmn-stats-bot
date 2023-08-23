@@ -1,9 +1,8 @@
-const { Telegraf } = require('telegraf');
-const { message } = require('telegraf/filters');
-const  CoinGecko  = require('coingecko-api');
-const { osmosis } = require('osmojs')
+import { Telegraf } from 'telegraf';
+import CoinGecko from 'coingecko-api'
+import { osmosis } from 'osmojs'
 
-const config = require('./config/default.json')
+import config from './config/default.json' assert { type: 'json' }
 
 const CoinGeckoClient = new CoinGecko();
 const REST_ENDPOINT = 'https://lcd.osmosis.zone';
@@ -25,9 +24,9 @@ const prices = async() => {
     const junousdPrice = pricesData.data['juno-network'].usd
 
     const phmnibcxPool = await client.osmosis.gamm.v1beta1.pool({poolId: '1042'})
-    const ibcxAmountInphmnatomPool = phmnatomPool.pool.pool_assets[0].token.amount
-    const phmnAmountInphmnibcxPool = phmnatomPool.pool.pool_assets[1].token.amount
-    const phmnibcxPrice = atomAmountInphmnatomPool / phmnAmountInphmnatomPool
+    const ibcxAmountInPhmnIbcxPool =  phmnibcxPool.pool.pool_assets[0].token.amount
+    const phmnAmountInPhmnIbcxPool =  phmnibcxPool.pool.pool_assets[1].token.amount
+    const phmnibcxPrice = ibcxAmountInPhmnIbcxPool / phmnAmountInPhmnIbcxPool
 
     return [atomusdPrice, junousdPrice, phmnatomPriceusd, phmnatomPrice, phmnibcxPrice]
 } 
