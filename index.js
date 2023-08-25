@@ -6,7 +6,7 @@ import 'dotenv/config';
 const CoinGeckoClient = new CoinGecko();
 const bot = new Telegraf(process.env.TOKEN);
 
-const botMessageHistory = [];
+const botMessageHistory = {};
 
 bot.start((ctx) => ctx.reply('Welcome'));
 
@@ -37,14 +37,27 @@ bot.command('phmn', async (ctx) => {
 <strong>PHMN-ATOM price:</strong> ${phmnAtomPriceUsd.toFixed(2)}$
 1 $PHMN  = ${phmnAtomPrice.toFixed(2)} $ATOM
 1 $PHMN  = ${phmnIbcxPrice.toFixed(2)} $IBCX`);
-
+        
     const chatId = ctx.message.chat.id
-    const botMessageId = botMessageInfo.message_id
-    botMessageHistory.push(botMessageId);
-    if (botMessageHistory.length > 1) {
-        ctx.telegram.deleteMessage(chatId, botMessageHistory[0])
-        botMessageHistory.shift()
+    const botCommandId = ctx.message.message_id 
+    const botMessageId = botMessageInfo.message_id 
+    
+    if (!Object.hasOwn(botMessageHistory, chatId)) {
+        botMessageHistory[chatId] = [];
+    }
+    botMessageHistory[chatId].push([botMessageId, botCommandId])
+    
+    if (botMessageHistory[chatId].length > 1) {
+        ctx.telegram.deleteMessage(chatId, botMessageHistory[chatId][0][0])
+        try {
+            await ctx.telegram.deleteMessage(chatId, botMessageHistory[chatId][0][1])
+        }
+        catch (err) {
+            ctx.telegram.sendMessage(chatId, "Give this bot admin role to delete an old bot commands")
+        }
+        botMessageHistory[chatId].shift()
     };
+    console.log(botMessageHistory)
 })
 bot.launch();
 
