@@ -14,7 +14,7 @@ bot.command('phmn', async (ctx) => {
     let pricesData = await CoinGeckoClient.simple.price({
         ids: ['cosmos', 'juno-network'], 
         vs_currencies: 'usd',
-        });
+    });
     
     const phmnTokenDenom = 'ibc/D3B574938631B0A1BA704879020C696E514CFADAA7643CDE4BD5EB010BDE327B' 
     const atomTokenDenom = 'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2'
@@ -29,6 +29,9 @@ bot.command('phmn', async (ctx) => {
     const phmnAtomPriceUsd = atomAmountInPhmnAtomPool / phmnAmountInPhmnAtomPool * atomUsdPrice
 
     const junoUsdPrice = pricesData.data['juno-network'].usd
+    const junoSwapData = await fetch('https://juno-api.polkachu.com/cosmwasm/wasm/v1/contract/juno17jv00cm4f3twr548jzayu57g9txvd4zdh54mdg9qpjs7samlphjsykylsq/state')
+    const junoSwap = junoSwapData.json()
+    console.log(junoSwapData)
 
     const phmnIbcxPool = await client.osmosis.gamm.v1beta1.pool({poolId: '1042'})
     const ibcxAmountInPhmnIbcxPool =  phmnIbcxPool.pool.pool_assets.find(obj => obj.token.denom === ibcxTokenDenom).token.amount
@@ -44,7 +47,7 @@ bot.command('phmn', async (ctx) => {
         
     const chatId = ctx.message.chat.id
     const botCommandId = ctx.message.message_id 
-    const botMessageId = botMessageInfo.message_id 
+    const botMessageId = botMessageInfo.message_id
     
     if (!Object.hasOwn(botMessageHistory, chatId)) {
         botMessageHistory[chatId] = [];
