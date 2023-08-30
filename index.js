@@ -1,7 +1,9 @@
-import { Telegraf } from 'telegraf';
+import { Telegraf, Scenes, session } from 'telegraf';
 import CoinGecko from 'coingecko-api';
 import { osmosis } from 'osmojs';
+import {toHex, fromHex, toBech32, fromBech32} from "@cosmjs/encoding";
 import 'dotenv/config';
+
 
 const CoinGeckoClient = new CoinGecko();
 const bot = new Telegraf(process.env.TOKEN);
@@ -29,9 +31,6 @@ bot.command('phmn', async (ctx) => {
     const phmnAtomPriceUsd = atomAmountInPhmnAtomPool / phmnAmountInPhmnAtomPool * atomUsdPrice
 
     const junoUsdPrice = pricesData.data['juno-network'].usd
-    const junoSwapData = await fetch('https://juno-api.polkachu.com/cosmwasm/wasm/v1/contract/juno17jv00cm4f3twr548jzayu57g9txvd4zdh54mdg9qpjs7samlphjsykylsq/state')
-    const junoSwap = junoSwapData.json()
-    console.log(junoSwapData)
 
     const phmnIbcxPool = await client.osmosis.gamm.v1beta1.pool({poolId: '1042'})
     const ibcxAmountInPhmnIbcxPool =  phmnIbcxPool.pool.pool_assets.find(obj => obj.token.denom === ibcxTokenDenom).token.amount
@@ -65,8 +64,69 @@ bot.command('phmn', async (ctx) => {
         botMessageHistory[chatId].shift()
     };
 })
-bot.launch();
 
+const AddressConversionScene = new Scenes.BaseScene('conversion');
+const address = {};
+const networks = ['cosmos', 'chihuahua']
+const { enter, leave } = Scenes.Stage
+AddressConversionScene.enter((ctx) => ctx.reply('You started address conversion scene. Plese enter the address'))
+AddressConversionScene.leave((ctx) => ctx.reply('I left this scene')) 
+AddressConversionScene.hears('quit', leave('conversion'))
+AddressConversionScene.on('message', (ctx) => {
+
+    
+    // try {
+    //     let hex_address = toHex(fromBech32(`${ctx.message.text}`).data)
+    //     address.cosmos = '123123'
+    //     ctx.reply("asdasd")
+    // } catch (err) {
+    //     console.log(address)
+    // }
+});
+
+
+
+            // address.cerberus = toBech32(`cerberus`, fromHex(`${hex_address}`));
+            // address.cosmos = toBech32(`cosmos`, fromHex(`${hex_address}`));
+            // address.chihuahua = toBech32(`chihuahua`, fromHex(`${hex_address}`));
+            // address.comdex = toBech32(`comdex`, fromHex(`${hex_address}`));
+            // address.bostrom = toBech32(`bostrom`, fromHex(`${hex_address}`));
+            // address.fetch = toBech32(`fetch`, fromHex(`${hex_address}`));
+            // address.juno = toBech32(`juno`, fromHex(`${hex_address}`));
+            // address.ki = toBech32(`ki`, fromHex(`${hex_address}`));
+            // address.like = toBech32(`like`, fromHex(`${hex_address}`));
+            // address.mantle = toBech32(`mantle`, fromHex(`${hex_address}`));
+            // address.odin = toBech32(`odin`, fromHex(`${hex_address}`));
+            // address.osmo = toBech32(`osmo`, fromHex(`${hex_address}`));
+            // address.rizon = toBech32(`rizon`, fromHex(`${hex_address}`));
+            // address.sif = toBech32(`sif`, fromHex(`${hex_address}`));
+            // address.stars = toBech32(`stars`, fromHex(`${hex_address}`));
+            // address.umee = toBech32(`umee`, fromHex(`${hex_address}`));
+            // address.tori = toBech32(`tori`, fromHex(`${hex_address}`));
+            // address.flix = toBech32(`omniflix`, fromHex(`${hex_address}`));
+
+
+
+
+
+
+
+
+
+const stage = new Scenes.Stage([AddressConversionScene])
+bot.use(session())
+bot.use(stage.middleware())
+
+bot.command('convert_address', ctx => ctx.scene.enter('conversion'))
+
+
+
+
+
+
+
+
+bot.launch();
 
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
