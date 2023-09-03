@@ -1,7 +1,9 @@
-import { Telegraf } from 'telegraf';
+import { Telegraf, Scenes, session } from 'telegraf';
 import CoinGecko from 'coingecko-api';
 import { osmosis } from 'osmojs';
+import {toHex, fromHex, toBech32, fromBech32} from "@cosmjs/encoding";
 import 'dotenv/config';
+
 
 const CoinGeckoClient = new CoinGecko();
 const bot = new Telegraf(process.env.TOKEN);
@@ -29,9 +31,6 @@ bot.command('phmn', async (ctx) => {
     const phmnAtomPriceUsd = atomAmountInPhmnAtomPool / phmnAmountInPhmnAtomPool * atomUsdPrice
 
     const junoUsdPrice = pricesData.data['juno-network'].usd
-    const junoSwapData = await fetch('https://juno-api.polkachu.com/cosmwasm/wasm/v1/contract/juno17jv00cm4f3twr548jzayu57g9txvd4zdh54mdg9qpjs7samlphjsykylsq/state')
-    const junoSwap = junoSwapData.json()
-    console.log(junoSwapData)
 
     const phmnIbcxPool = await client.osmosis.gamm.v1beta1.pool({poolId: '1042'})
     const ibcxAmountInPhmnIbcxPool =  phmnIbcxPool.pool.pool_assets.find(obj => obj.token.denom === ibcxTokenDenom).token.amount
@@ -65,8 +64,91 @@ bot.command('phmn', async (ctx) => {
         botMessageHistory[chatId].shift()
     };
 })
-bot.launch();
 
+const AddressConversionScene = new Scenes.BaseScene('conversion');
+const address = [];
+const { enter, leave } = Scenes.Stage
+AddressConversionScene.enter((ctx) => ctx.reply('You started address conversion scene. Plese enter the address'))
+AddressConversionScene.leave((ctx) => ctx.reply('I left this scene')) 
+AddressConversionScene.hears('quit', leave('conversion'))
+AddressConversionScene.on('text', async (ctx) => {
+    try {
+        let hex_address = toHex(fromBech32(`${ctx.message.text}`).data)
+            address.cerberus = toBech32(`cerberus`, fromHex(`${hex_address}`));
+            address.cosmos = toBech32(`cosmos`, fromHex(`${hex_address}`));
+            address.chihuahua = toBech32(`chihuahua`, fromHex(`${hex_address}`));
+            address.comdex = toBech32(`comdex`, fromHex(`${hex_address}`));
+            address.bostrom = toBech32(`bostrom`, fromHex(`${hex_address}`));
+            address.fetch = toBech32(`fetch`, fromHex(`${hex_address}`));
+            address.juno = toBech32(`juno`, fromHex(`${hex_address}`));
+            address.ki = toBech32(`ki`, fromHex(`${hex_address}`));
+            address.like = toBech32(`like`, fromHex(`${hex_address}`));
+            address.mantle = toBech32(`mantle`, fromHex(`${hex_address}`));
+            address.odin = toBech32(`odin`, fromHex(`${hex_address}`));
+            address.osmo = toBech32(`osmo`, fromHex(`${hex_address}`));
+            address.rizon = toBech32(`rizon`, fromHex(`${hex_address}`));
+            address.sif = toBech32(`sif`, fromHex(`${hex_address}`));
+            address.stars = toBech32(`stars`, fromHex(`${hex_address}`));
+            address.umee = toBech32(`umee`, fromHex(`${hex_address}`));
+            address.tori = toBech32(`tori`, fromHex(`${hex_address}`));
+            address.flix = toBech32(`omniflix`, fromHex(`${hex_address}`));
+            await ctx.replyWithHTML(`Cerberus: 
+<code>${address.cerberus}</code> 
+Cosmos HUB: 
+<code>${address.cosmos}</code>
+Chihuahua: 
+<code>${address.chihuahua}</code>
+Comdex: 
+<code>${address.comdex}</code>
+Bostrom: 
+<code>${address.bostrom}</code>
+FetchAI: 
+<code>${address.fetch}</code>
+Juno: 
+<code>${address.juno}</code>
+Ki-chain: 
+<code>${address.ki}</code>
+Like: 
+<code>${address.like}</code>
+AssetMantle: 
+<code>${address.mantle}</code>
+Odin protocol: 
+<code>${address.odin}</code>
+Osmosis: 
+<code>${address.osmo}</code>
+Rizon: 
+<code>${address.rizon}</code>
+Sifchain: 
+<code>${address.sif}</code>
+Stargaze: 
+<code>${address.stars}</code>
+Umee: 
+<code>${address.umee}</code>
+Teritori:
+<code>${address.tori}</code>
+Omniflix
+<code>${address.flix}</code>
+`)
+            AddressConversionScene.leave()  
+    } catch (err) {1
+        console.log(ctx.reply("An error has occured. Try later"))
+    }
+});
+
+const stage = new Scenes.Stage([AddressConversionScene])
+bot.use(session())
+bot.use(stage.middleware())
+
+bot.command('convert_address', ctx => {
+    if (ctx.message.chat.id > 0) {
+        ctx.scene.enter('conversion')
+    } else {
+        ctx.reply("This option is only available in private messages")
+    }
+    
+})
+
+bot.launch();
 
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
