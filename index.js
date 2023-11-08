@@ -1,4 +1,4 @@
-import { Telegraf, Scenes, session } from 'telegraf';
+import { Telegraf, Scenes, session, Markup } from 'telegraf';
 import CoinGecko from 'coingecko-api';
 import { osmosis } from 'osmojs';
 import {toHex, fromHex, toBech32, fromBech32} from "@cosmjs/encoding";
@@ -22,8 +22,12 @@ bot.command('phmn', async (ctx) => {
     const atomTokenDenom = 'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2'
     const ibcxTokenDenom = 'factory/osmo14klwqgkmackvx2tqa0trtg69dmy0nrg4ntq4gjgw2za4734r5seqjqm4gm/uibcx'  
         
-    const client = await osmosis.ClientFactory.createLCDClient({ restEndpoint: process.env.REST_ENDPOINT_OSMOSIS });
-    const phmnAtomPool = await client.osmosis.gamm.v1beta1.pool({poolId: '867'})
+    const client = await osmosis.ClientFactory.createLCDClient({
+      restEndpoint: "https://osmosis-api.polkachu.com",
+    });
+    const phmnAtomPool = await client.osmosis.gamm.v1beta1.pool({
+      poolId: "1255",
+    });
     const atomAmountInPhmnAtomPool = phmnAtomPool.pool.pool_assets.find(obj => obj.token.denom === atomTokenDenom).token.amount
     const phmnAmountInPhmnAtomPool = phmnAtomPool.pool.pool_assets.find(obj => obj.token.denom === phmnTokenDenom).token.amount
     const phmnAtomPrice = atomAmountInPhmnAtomPool / phmnAmountInPhmnAtomPool
@@ -32,7 +36,9 @@ bot.command('phmn', async (ctx) => {
 
     const junoUsdPrice = pricesData.data['juno-network'].usd
 
-    const phmnIbcxPool = await client.osmosis.gamm.v1beta1.pool({poolId: '1042'})
+    const phmnIbcxPool = await client.osmosis.gamm.v1beta1.pool({
+      poolId: "1254",
+    });
     const ibcxAmountInPhmnIbcxPool =  phmnIbcxPool.pool.pool_assets.find(obj => obj.token.denom === ibcxTokenDenom).token.amount
     const phmnAmountInPhmnIbcxPool =  phmnIbcxPool.pool.pool_assets.find(obj => obj.token.denom === phmnTokenDenom).token.amount
     const phmnIbcxPrice = ibcxAmountInPhmnIbcxPool / phmnAmountInPhmnIbcxPool
@@ -147,6 +153,51 @@ bot.command('convert_address', ctx => {
     }
     
 })
+
+bot.command("info", async (ctx) => {
+  const botMessageInfo = await ctx.replyWithHTML(
+    `<strong>PHMN contract address:</strong> <code>juno1rws84uz7969aaa7pej303udhlkt3j9ca0l3egpcae98jwak9quzq8szn2l</code>`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.url("Dashboard", "https://phmn-stats.posthuman.digital"),
+        Markup.button.url(
+          "PHMN docs",
+          "https://antropocosmist.medium.com/phmn-tokenomics-f3b7116331e6"
+        ),
+      ],
+      [
+        Markup.button.url(
+          "DAS",
+          "https://daodao.zone/dao/juno1h5ex5dn62arjwvwkh88r475dap8qppmmec4sgxzmtdn5tnmke3lqwpplgg"
+        ),
+        Markup.button.url("Discord", "https://discord.gg/4xsuADrA"),
+        Markup.button.url("Zealy", "https://zealy.io/c/posthumandvs"),
+      ],
+    ])
+  );
+
+  const chatId = ctx.message.chat.id;
+  const botCommandId = ctx.message.message_id;
+  const botMessageId = botMessageInfo.message_id;
+
+  if (!Object.hasOwn(botMessageHistory, chatId)) {
+    botMessageHistory[chatId] = [];
+  }
+  botMessageHistory[chatId].push([botMessageId, botCommandId]);
+
+  if (botMessageHistory[chatId].length > 1) {
+    ctx.telegram.deleteMessage(chatId, botMessageHistory[chatId][0][0]);
+    try {
+      await ctx.telegram.deleteMessage(chatId, botMessageHistory[chatId][0][1]);
+    } catch (err) {
+      ctx.telegram.sendMessage(
+        chatId,
+        "Give this bot the admin role to delete an old commands"
+      );
+    }
+    botMessageHistory[chatId].shift();
+  }
+});
 
 bot.launch();
 
